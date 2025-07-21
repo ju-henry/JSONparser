@@ -1,0 +1,44 @@
+---
+title: "JSON parser speed comparison"
+format: html
+bibliography: references.bib
+---
+
+## Question
+
+Parsing a few json files in R is often done using e.g. jsonlite. But if the 
+number of files grows (to hundreds of thousands or millions), are there faster
+tools or ways to parse?  
+
+## Tools
+
+Here I compare three tools:  
+
+- [**jsonlite**](https://cran.r-project.org/web/packages/jsonlite/index.html) [@jsonlite]
+- [**jq**](https://jqlang.org/) [@jq]
+- [**simdjson**](https://simdjson.org/) [@simdjson]
+
+The comparison is done inside R scripts. **jsonlite** is an R package and both 
+**jq** and **simdjson** have bindings for R - **jqr** and **RcppSimdJson**. 
+
+The GNU utility **time** [@gnutime] is used to measure elapsed time and CPU usage.
+
+## Experiments 
+
+I run experiments using public X (Twitter) data in three scenarios:  
+
+- **base**: 100 lightweight (~4kB) jsons (one json represents infos about a single tweet)
+- **heavier**: 100 heavier (~1MB) jsons (where random entries have been added to the files of the base case
+- **base100**: 10'000 lightweight files (using 100 copies of the files in the base case) 
+
+For all jsons, I am interested in extracting the same 21 fields (e.g. *created_at*, *user.name*,...) 
+and write a final csv file to disk. This matters since both **jq** and **simdjson** 
+offer the possibility to query specific entries instead of parsing entire files.
+The fields I am interested in are sometimes nested and 6 of them require the application of a 
+function to get the number of characters or to get the number of entries (nchar() or length(), in R). 
+
+## Results
+
+
+
+
