@@ -1,27 +1,26 @@
 #!/bin/bash
 
-mkdir -p twitter_heavy
-target_size=1048576 # 1MB
+mkdir -p twitter_heavier
 
-for i in {0..99}; do
-  src="twitter/object_${i}.json"
-  dest="twitter_heavy/object_${i}.json"
+for file in twitter/*.json; do
+    base=$(basename "$file")
+    tmpfile=$(mktemp)
+    cp "$file" "$tmpfile"
 
-  # Start with the original
-  cp "$src" "$dest"
+    iter=2
+    size=$(stat -c "%s" "$tmpfile")
+    while [ "$size" -lt 1048576 ]; do # 1MB = 1024 * 1024 = 1048576 bytes
+        # Generate new entries with incremented suffixes
+        jq --argjson orig "$(jq '.' "$file")" \
+           --arg i "$iter" '
+           . + (with_entries({key: (.key + $i), value: .value}))
+           ' "$tmpfile" > "${tmpfile}.new"
 
-  n=0
-  while [ "$(stat -c%s "$dest")" -lt "$target_size" ]; do
-    # Bash brace expansion to create 100 new "fillerN" fields at a time
-    jq_expression='.'
-    for j in {1..100}; do
-      ((n++))
-      jq_expression+=" + {\"filler${n}\": \"dummy filler line to increase file size; you can add more text here\"}"
+        mv "${tmpfile}.new" "$tmpfile"
+        ((iter++))
+        size=$(stat -c "%s" "$tmpfile")
     done
 
-    # Update the file by adding 100 fields
-    tmpfile=$(mktemp)
-    jq "$jq_expression" "$dest" > "$tmpfile" && mv "$tmpfile" "$dest"
-  done
+    mv "$tmpfile" "twitter_heavier/$base"
 done
 
