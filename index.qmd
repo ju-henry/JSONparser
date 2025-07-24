@@ -4,6 +4,10 @@ format: html
 bibliography: references.bib
 ---
 
+```{r results='hide', echo=FALSE}
+library(ggplot2)
+```
+
 ## Question
 
 Parsing a few json files in R is often done using e.g. jsonlite. But if the 
@@ -39,6 +43,23 @@ function to get the number of characters or to get the number of entries (nchar(
 
 ## Results
 
+```{r results='hide', eval=F, echo=F}
+system("./get_results.sh")
+```
 
+```{r echo=F}
+df <- read.csv("~/projets/parser/results_logs.txt", header=FALSE)
+df$V1 <- signif(as.numeric(substr(df$V1, 3, nchar(df$V1))), digits = 2)
+df$V3 <- gsub(pattern = "parse_|\\.R", replacement = "", x = df$V3)
+names(df) <- c("time", "CPU", "tool", "case")
+```
+
+```{r echo=F}
+ggplot(df, aes(x = case, y = time, colour = tool)) + 
+  geom_point(size = 3) + 
+  theme_minimal() +
+  scale_y_continuous(breaks = seq(0, ceiling(max(df$time)), by = 1)) + 
+  theme(panel.grid.major.y = element_line(color = "grey"))
+```
 
 
