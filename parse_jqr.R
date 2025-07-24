@@ -1,7 +1,8 @@
 
-all_objects <- list.files("./twitter", pattern = "json", full.names = T)
+args <- commandArgs(trailingOnly = TRUE)
+all_objects <- list.files(paste0("./", args), pattern = "json", full.names = T)
 
-all_files <- sapply(all_objects, function(x) paste(readLines(x)))
+all_files <- sapply(all_objects, function(x) paste(readLines(x), collapse = ""))
 
 jq_query <- '[
   .created_at, 

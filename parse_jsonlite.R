@@ -1,5 +1,6 @@
 
-all_objects <- list.files("./twitter", pattern = "json", full.names = T)
+args <- commandArgs(trailingOnly = TRUE)
+all_objects <- list.files(paste0("./", args), pattern = "json", full.names = T)
 lres <- vector(mode = "list", length = length(all_objects))
 
 for (i in seq_along(all_objects)) {
