@@ -50,7 +50,7 @@ system("./get_results.sh")
 ```{r echo=F}
 df <- read.csv("~/projets/parser/results_logs.txt", header=FALSE)
 df$V1 <- signif(as.numeric(substr(df$V1, 3, nchar(df$V1))), digits = 2)
-df$V3 <- gsub(pattern = "parse_|\\.R", replacement = "", x = df$V3)
+df$V3 <- gsub(pattern = "parse_|\\.R|\\.py", replacement = "", x = df$V3)
 names(df) <- c("time", "CPU", "tool", "case")
 ```
 

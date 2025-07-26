@@ -2,8 +2,9 @@ import simdjson
 import csv
 import glob
 import os
+import sys
 
-INPUT_DIR = os.path.expanduser('./twitter')
+INPUT_DIR = os.path.expanduser(sys.argv[1])
 OUTPUT_CSV = os.path.expanduser('output_simdjson.csv')
 
 # List of input files

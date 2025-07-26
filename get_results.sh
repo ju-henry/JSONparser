@@ -15,3 +15,8 @@ for arg in "${args[@]}"; do
     /usr/bin/time -f"%E,%P,$script,$arg" -o results_logs.txt -a Rscript "$script" "$arg"
   done
 done
+
+pyscript="parse_pysimdjson.py"
+for arg in "${args[@]}"; do
+  /usr/bin/time -f"%E,%P,$pyscript,$arg" -o results_logs.txt -a python "$pyscript" "$arg"
+done
