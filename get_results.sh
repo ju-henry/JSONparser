@@ -1,22 +1,30 @@
 #!/bin/bash
 
 # Check if results_logs.txt exists, if yes, delete it
-if [ -f "results_logs.txt" ]; then
-  rm "results_logs.txt"
-fi
+for i in $(seq 1 5); do
+  if [ -f "results_logs_${i}.csv" ]; then
+    rm "results_logs_${i}.csv"
+  fi
+done
 
 # Define arrays of scripts and arguments
 scripts=("parse_jqr.R" "parse_jsonlite.R" "parse_rcppsimdjson.R")
-args=("twitter" "twitter_heavier" "twitter100")
+args=("base" "heavy" "many")
 
-# Loop over each script and each argument
-for arg in "${args[@]}"; do
-  for script in "${scripts[@]}"; do
-    /usr/bin/time -f"%E,%P,$script,$arg" -o results_logs.txt -a Rscript "$script" "$arg"
+for i in $(seq 1 5); do
+  # Loop over each script and each argument
+  for arg in "${args[@]}"; do
+    for script in "${scripts[@]}"; do
+      /usr/bin/time -f"%E,%P,$script,$arg" -o results_logs_${i}.csv -a Rscript "$script" "$arg"
+    done
   done
-done
 
-pyscript="parse_pysimdjson.py"
-for arg in "${args[@]}"; do
-  /usr/bin/time -f"%E,%P,$pyscript,$arg" -o results_logs.txt -a python "$pyscript" "$arg"
+  pyscript="parse_pysimdjson.py"
+  for arg in "${args[@]}"; do
+    /usr/bin/time -f"%E,%P,$pyscript,$arg" -o results_logs_${i}.csv -a python "$pyscript" "$arg"
+  done
+  bscript="parse_jq.sh"
+  for arg in "${args[@]}"; do
+    /usr/bin/time -f"%E,%P,$bscript,$arg" -o results_logs_${i}.csv -a bash "$bscript" "$arg"
+  done
 done

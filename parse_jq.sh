@@ -20,5 +20,5 @@ jq -r '[
 .retweeted_status.user.followers_count, 
 .retweeted_status.user.friends_count, 
 .retweeted_status.user.verified
-] | @csv' ./twitter/*.json > output_jq.csv
+] | @csv' ./"$1"/*.json > output_jq.csv
 
