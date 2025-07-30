@@ -31,9 +31,9 @@ The GNU utility **time** [@gnutime] is used to measure elapsed time and CPU usag
 
 I run experiments using public X (Twitter) data in three scenarios:  
 
-- **base**: 100 lightweight (~4kB) jsons (one json represents infos about a single tweet)
-- **heavier**: 100 heavier (~1MB) jsons (where random entries have been added to the files of the base case)
-- **base100**: 10'000 lightweight files (using 100 copies of each file in the base case) 
+- **base**: 100 lightweight (~4kB) jsons (one json represents infos about a single tweet).
+- **heavy**: 100 heavier (~1MB) jsons (where entries have been duplicated in files of the base case to reach ~1MB each).
+- **many**: ~25'000 lightweight files (~100MB overall) using many copies of each file in the base case. 
 
 For all jsons, I am interested in extracting the same 21 fields (e.g. *created_at*, *user.name*,...) 
 and write a final csv file to disk. This matters since both **jq** and **simdjson** 
@@ -48,9 +48,22 @@ system("./get_results.sh")
 ```
 
 ```{r echo=F}
-df <- read.csv("~/projets/parser/results_logs.txt", header=FALSE)
-df$V1 <- signif(as.numeric(substr(df$V1, 3, nchar(df$V1))), digits = 2)
-df$V3 <- gsub(pattern = "parse_|\\.R|\\.py", replacement = "", x = df$V3)
+res_files <- paste0("results_logs_", 1:5, ".csv")
+read_csv_header <- function(f) {
+  
+  values <- read.csv(f, header = FALSE)[, 1]
+  values <- sub(pattern = "^0:", "", values)
+  values <- as.numeric(values)
+  
+  return(values)
+}
+A <- sapply(res_files, read_csv_header)
+times <- apply(A, 1, median)
+
+df <- read.csv(res_files[1], header=FALSE)
+df$V1 <- times
+df$V1 <- signif(df$V1, digits = 2)
+df$V3 <- gsub(pattern = "parse_|\\.R|\\.py|\\.sh", replacement = "", x = df$V3)
 names(df) <- c("time", "CPU", "tool", "case")
 ```
 
@@ -62,4 +75,13 @@ ggplot(df, aes(x = case, y = time, colour = tool)) +
   theme(panel.grid.major.y = element_line(color = "grey"))
 ```
 
+-  Pysimdjson dominates other tools in the last two cases and comes second to jq in the base case. Contrarily to other tools / bindings, it is barely affected by the size of the files (second case). Pysimdjson also does better than its R counterpart (rcppsimdjson).
+- As one could expect, jq fares better than its R binding (jqr).
+- R tools seem to suffer in the last case (maybe because of the long for loop).
+
+## Conclusion
+
+pysimdjson seems to be the obvious answer, being faster than other tools when json files are heavy or many.
+
+## Reproductibility
 
