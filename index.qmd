@@ -1,20 +1,29 @@
 ---
 title: "JSON parser speed comparison"
-format: html
+format: 
+  html:
+    css: style.css
 bibliography: references.bib
 ---
 
 ```{r results='hide', echo=FALSE}
 library(ggplot2)
 ```
+<br>
 
 ## Question
 
-Parsing a few json files in R is often done using e.g. jsonlite. But if the 
+::: {.justify}
+
+Parsing a few json files in R is often done using e.g. **jsonlite**. But if the 
 number of files grows (to hundreds of thousands or millions), are there faster
 tools or ways to parse them?  
 
+:::
+
 ## Tools
+
+::: {.justify}
 
 Here I compare three tools:  
 
@@ -22,12 +31,23 @@ Here I compare three tools:
 - [**jq**](https://jqlang.org/) [@jq]
 - [**simdjson**](https://simdjson.org/) [@simdjson]
 
-The comparison is done inside R scripts. **jsonlite** is an R package and both 
-**jq** and **simdjson** have bindings for R - **jqr** and **RcppSimdJson**. 
+**jsonlite** is an R package while **jq** and **simdjson** have bindings for R:  
 
-The GNU utility **time** [@gnutime] is used to measure elapsed time and CPU usage.
+- [**jqr**](https://cran.r-project.org/web/packages/jqr/index.html) [@jqr]
+- [**RcppSimdJson**](https://cran.r-project.org/web/packages/RcppSimdJson/index.html) [@rcppsimdjson]
+
+To add some elements for the comparison, I also use **jq** as a stand-alone 
+program (from the shell) as well as a Python binding for **simdjson**:  
+
+- [**pysimdjson**](https://pysimdjson.tkte.ch/index.html) [@pysimdjson]
+
+The GNU utility **time** [@gnutime] is used to measure elapsed wall-clock time.
+
+:::
 
 ## Experiments 
+
+::: {.justify}
 
 I run experiments using public X (Twitter) data in three scenarios:  
 
@@ -37,11 +57,17 @@ I run experiments using public X (Twitter) data in three scenarios:
 
 For all jsons, I am interested in extracting the same 21 fields (e.g. *created_at*, *user.name*,...) 
 and write a final csv file to disk. This matters since both **jq** and **simdjson** 
-offer the possibility to query specific entries instead of parsing entire files.
+offer the possibility to query specific entries directly in the parse command.
 The fields I am interested in are sometimes nested and 6 of them require the application of a 
 function to get the number of characters or to get the number of entries (nchar() or length(), in R). 
 
+In order to get stable results, all experiments are run 5 times and the median value is used.
+
+:::
+
 ## Results
+
+### Graph
 
 ```{r results='hide', eval=F, echo=F}
 system("./get_results.sh")
@@ -75,13 +101,28 @@ ggplot(df, aes(x = case, y = time, colour = tool)) +
   theme(panel.grid.major.y = element_line(color = "grey"))
 ```
 
--  Pysimdjson dominates other tools in the last two cases and comes second to jq in the base case. Contrarily to other tools / bindings, it is barely affected by the size of the files (second case). Pysimdjson also does better than its R counterpart (rcppsimdjson).
-- As one could expect, jq fares better than its R binding (jqr).
-- R tools seem to suffer in the last case (maybe because of the long for loop).
+### Table
+
+```{r echo=FALSE}
+df <- df[order(df$case, df$tool),]
+B <- matrix(data = df$time, nrow = length(unique(df$tool)), ncol = length(unique(df$case)), byrow = F)
+dfB <- data.frame(B, row.names = df$tool[1:nrow(B)])
+names(dfB) <- unique(df$case)
+print(dfB)
+```
+
+### Observations
+
+::: {.justify}
+
+-  **Pysimdjson** dominates other tools in the last two cases and comes second to **jq** in the base case. Contrarily to other tools / bindings, it is barely affected by the size of the files (second case). **Pysimdjson** also does better than its R counterpart (**rcppsimdjson**).
+- As one could expect, **jq** fares better than its R binding (**jqr**).
+- R-based tools seem to suffer in the last case (maybe because of the long *for* loop).
+
+:::
 
 ## Conclusion
 
-pysimdjson seems to be the obvious answer, being faster than other tools when json files are heavy or many.
+**pysimdjson** seems to be the obvious answer, being faster than other tools when json files are heavy or many.
 
 ## Reproductibility
-
