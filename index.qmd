@@ -21,6 +21,8 @@ tools or ways to parse them?
 
 :::
 
+<br>
+
 ## Tools
 
 ::: {.justify}
@@ -45,6 +47,8 @@ The GNU utility **time** [@gnutime] is used to measure elapsed wall-clock time.
 
 :::
 
+<br>
+
 ## Experiments 
 
 ::: {.justify}
@@ -64,6 +68,8 @@ function to get the number of characters or to get the number of entries (nchar(
 In order to get stable results, all experiments are run 5 times and the median value is used.
 
 :::
+
+<br>
 
 ## Results
 
@@ -120,6 +126,8 @@ print(dfB)
 - R-based tools seem to suffer in the last case (maybe because of the long *for* loop).
 
 :::
+
+<br>
 
 ## Conclusion
 
