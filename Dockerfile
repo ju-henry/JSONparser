@@ -46,5 +46,5 @@ RUN chmod +x *
 RUN ./fetch_twitter_json.sh && ./produce_base_data.sh \
     && ./produce_heavy_data.sh && ./produce_many_data.sh
 
-RUN ./get_results.sh && Rscript get_median_results.R
+CMD ./get_results.sh && Rscript get_median_results.R
 
