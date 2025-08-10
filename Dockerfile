@@ -6,22 +6,22 @@ RUN apt-get update && apt-get install -y \
     xz-utils tk-dev libjq-dev time \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-ENV PYENV_ROOT /root/.pyenv
-ENV PATH $PYENV_ROOT/bin:$PATH
+ENV PYENV_ROOT=/root/.pyenv
+ENV PATH=$PYENV_ROOT/bin:$PATH
 
 RUN git clone https://github.com/pyenv/pyenv.git $PYENV_ROOT \
-    && git clone https://github.com/pyenv/pyenv-virtualenv.git $PYENV_ROOT/plugins/pyenv-virtualenv \
-    && echo 'eval "$(pyenv init --path)"' >> /root/.bashrc \
-    && echo 'eval "$(pyenv init -)"' >> /root/.bashrc \
-    && echo 'eval "$(pyenv virtualenv-init -)"' >> /root/.bashrc
-
-RUN /bin/bash -c "\
-    source /root/.bashrc && \
-    pyenv install 3.11.10 && \
-    pyenv virtualenv 3.11.10 parsepy && \
-    pyenv activate parsepy && \
-    pip install pysimdjson==7.0.2 && \
-    pyenv global parsepy"
+    && git clone https://github.com/pyenv/pyenv-virtualenv.git $PYENV_ROOT/plugins/pyenv-virtualenv
+    
+RUN export PYENV_ROOT="/root/.pyenv" \
+    && export PATH="$PYENV_ROOT/bin:$PATH" \
+    && eval "$(pyenv init --path)" \
+    && eval "$(pyenv init -)" \
+    && eval "$(pyenv virtualenv-init -)" \
+    && pyenv install 3.11.10 \
+    && pyenv virtualenv 3.11.10 parsepy \
+    && pyenv activate parsepy \
+    && pip install --no-cache-dir pysimdjson==7.0.2 \
+    && pyenv global parsepy
 
 RUN wget https://github.com/jqlang/jq/releases/download/jq-1.7/jq-linux64 -O /usr/local/bin/jq
 
@@ -40,11 +40,11 @@ RUN R -e "remotes::install_version('jqr', version = '1.4.0', \
 
 WORKDIR /usr/src/app
 
-COPY fetch* parse* produce* get* .
+COPY fetch* parse* produce* get* entrypoint.sh .
 RUN chmod +x *
 
 RUN ./fetch_twitter_json.sh && ./produce_base_data.sh \
     && ./produce_heavy_data.sh && ./produce_many_data.sh
 
-CMD ./get_results.sh && Rscript get_median_results.R
+CMD ["./entrypoint.sh"]
 
