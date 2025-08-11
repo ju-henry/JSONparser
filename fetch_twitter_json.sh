@@ -1,3 +1,3 @@
 #!/bin/bash
 
-wget https://github.com/chadaustin/sajson/blob/master/testdata/twitter.json
+wget https://raw.githubusercontent.com/chadaustin/sajson/refs/heads/master/testdata/twitter.json
