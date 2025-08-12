@@ -15,16 +15,16 @@ for i in $(seq 1 5); do
   # Loop over each script and each argument
   for arg in "${args[@]}"; do
     for script in "${scripts[@]}"; do
-      /usr/bin/time -f"%E,%P,$script,$arg" -o results_logs_${i}.csv -a Rscript "$script" "$arg"
+      /usr/bin/time -f"%E,$script,$arg" -o results_logs_${i}.csv -a Rscript "$script" "$arg"
     done
   done
 
   pyscript="parse_pysimdjson.py"
   for arg in "${args[@]}"; do
-    /usr/bin/time -f"%E,%P,$pyscript,$arg" -o results_logs_${i}.csv -a python "$pyscript" "$arg"
+    /usr/bin/time -f"%E,$pyscript,$arg" -o results_logs_${i}.csv -a python3 "$pyscript" "$arg"
   done
   bscript="parse_jq.sh"
   for arg in "${args[@]}"; do
-    /usr/bin/time -f"%E,%P,$bscript,$arg" -o results_logs_${i}.csv -a bash "$bscript" "$arg"
+    /usr/bin/time -f"%E,$bscript,$arg" -o results_logs_${i}.csv -a bash "$bscript" "$arg"
   done
 done
