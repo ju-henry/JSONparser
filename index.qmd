@@ -133,7 +133,7 @@ docker run --cpus=1 --memory=2g --rm -v "$(pwd):/output" parse_exp
 # results can be found in: results_logs_median.csv
 
 # to generate the report with the graph, you can do:
-quarto render .
+quarto render index.qmd
 ```
 
 <br>
