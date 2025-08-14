@@ -16,8 +16,8 @@ library(ggplot2)
 ::: {.justify}
 
 Parsing a few json files in R is often done using e.g. **jsonlite**. But if the 
-number of files grows (to hundreds of thousands or millions), are there faster
-tools or ways to parse them?  
+files grow in number (to hundreds of thousands or millions) or size, are there 
+faster tools to parse them?  
 
 :::
 
@@ -38,7 +38,7 @@ Here I compare three tools:
 - [**jqr**](https://cran.r-project.org/web/packages/jqr/index.html) [@jqr]
 - [**RcppSimdJson**](https://cran.r-project.org/web/packages/RcppSimdJson/index.html) [@rcppsimdjson]
 
-To add some elements for the comparison, I also use **jq** as a stand-alone 
+To add some elements to the comparison, I also use **jq** as a stand-alone 
 program (from the shell) as well as a Python binding for **simdjson**:  
 
 - [**pysimdjson**](https://pysimdjson.tkte.ch/index.html) [@pysimdjson]
@@ -65,6 +65,9 @@ offer the possibility to query specific entries directly in the parse command.
 The fields I am interested in are sometimes nested and 6 of them require the application of a 
 function to get the number of characters or to get the number of entries (nchar() or length(), in R). 
 
+In the **heavy** case, entries to be retrieved are randomly located in each file, 
+among all duplicated entries - that are marked with an integer suffix. 
+
 In order to get stable results, all experiments are run 5 times and the median value is used.
 
 :::
@@ -75,28 +78,8 @@ In order to get stable results, all experiments are run 5 times and the median v
 
 ### Graph
 
-```{r results='hide', eval=F, echo=F}
-system("./get_results.sh")
-```
-
 ```{r echo=F}
-res_files <- paste0("results_logs_", 1:5, ".csv")
-read_csv_header <- function(f) {
-  
-  values <- read.csv(f, header = FALSE)[, 1]
-  values <- sub(pattern = "^0:", "", values)
-  values <- as.numeric(values)
-  
-  return(values)
-}
-A <- sapply(res_files, read_csv_header)
-times <- apply(A, 1, median)
-
-df <- read.csv(res_files[1], header=FALSE)
-df$V1 <- times
-df$V1 <- signif(df$V1, digits = 2)
-df$V3 <- gsub(pattern = "parse_|\\.R|\\.py|\\.sh", replacement = "", x = df$V3)
-names(df) <- c("time", "CPU", "tool", "case")
+df <- read.csv("results_logs_median.csv")
 ```
 
 ```{r echo=F}
@@ -121,7 +104,7 @@ print(dfB)
 
 ::: {.justify}
 
--  **Pysimdjson** dominates other tools in the last two cases and comes second to **jq** in the base case. Contrarily to other tools / bindings, it is barely affected by the size of the files (second case). **Pysimdjson** also does better than its R counterpart (**rcppsimdjson**).
+-  **Pysimdjson** dominates other tools in the last two cases and comes second to **jq** in the base case. Contrarily to other tools / bindings, it is barely affected by the size of the files (second case). **Pysimdjson** also does much better than its R counterpart (**rcppsimdjson**).
 - As one could expect, **jq** fares better than its R binding (**jqr**).
 - R-based tools seem to suffer in the last case (maybe because of the long *for* loop).
 
@@ -133,4 +116,24 @@ print(dfB)
 
 **pysimdjson** seems to be the obvious answer, being faster than other tools when json files are heavy or many.
 
+<br>
+
 ## Reproductibility
+
+Measured values cannot be reproduced (since they depend on hardware, software, OS,...), but I would expect that **pysimdjson** remains the fastest tool if SIMD is possible on your machine. If you would like to run the experiments, you can clone the repository and use the Dockerfile:
+
+```{bash}
+#| eval: false
+#| echo: true
+
+git clone https://github.com/ju-henry/JSONparser.git
+cd JSONparser
+docker build -t parse_exp .
+docker run --cpus=1 --memory=2g --rm -v "$(pwd):/output" parse_exp
+# results can be found in: results_logs_median.csv
+
+# to generate the report with the graph, you can do:
+quarto render .
+```
+
+<br>
